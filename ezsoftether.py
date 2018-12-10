@@ -10,14 +10,14 @@ Licensed under the GNU General Public License Version 3 (GNU GPL v3),
     available at: https://www.gnu.org/licenses/gpl-3.0.txt
 (C) 2018 K4YT3X
 """
+from Avalon.framework import Avalon
 import argparse
-import avalon_framework as avalon
 import configparser
 import os
 import socket
 import subprocess
 
-VERSION = '1.0 alpha'
+VERSION = '1.0.0'
 
 
 def process_arguments():
@@ -37,7 +37,7 @@ def shell_execute(command):
     Print the command to be executed
     by shell and execute the command
     """
-    avalon.dbgInfo('Executing: {}'.format(command))
+    Avalon.dbgInfo('Executing: {}'.format(command))
     os.system(command)
 
 
@@ -50,12 +50,12 @@ def get_gateway_ip():
     Returns:
         str -- IP address of default gateway
     """
-    avalon.info('Getting gateway IP address')
+    Avalon.info('Getting gateway IP address')
     raw = subprocess.Popen(['ip', 'route'], stdout=subprocess.PIPE)
     output = raw.communicate()[0].decode().split('\n')
     for line in output:
         if line.split(' ')[0] == 'default' and 'wlan0' in line:
-            avalon.dbgInfo('Got gateway IP: {}'.format(line.split(' ')[2]))
+            Avalon.dbgInfo('Got gateway IP: {}'.format(line.split(' ')[2]))
             return line.split(' ')[2]
 
 
@@ -68,10 +68,10 @@ def get_original_route():
     Returns:
         str -- the original routing statement
     """
-    avalon.info('Getting original routing information')
+    Avalon.info('Getting original routing information')
     raw = subprocess.Popen(['ip', 'route'], stdout=subprocess.PIPE)
     output = raw.communicate()[0].decode().split('\n')
-    avalon.dbgInfo('Route: {}'.format(output[0]))
+    Avalon.dbgInfo('Route: {}'.format(output[0]))
     return output[0]
 
 
@@ -111,7 +111,7 @@ def restore_route():
     how it was before vpn was routed through
     the virtual vpn interface.
     """
-    avalon.info('Restoring original network connection')
+    Avalon.info('Restoring original network connection')
     softether = configparser.ConfigParser()
     softether.read('/tmp/original_route.tmp')
     original_route = softether['SE']['ORIGINAL']
@@ -138,14 +138,14 @@ if args.version:  # prints program legal / dev / version info
     exit(0)
 
 if os.getuid() != 0:
-    avalon.error('This script must be run as root\n')
+    Avalon.error('This script must be run as root\n')
     exit(1)
 
 if not args.interface or not args.gateway:
-    avalon.error('VPN interface and gateway address must be provided\n')
+    Avalon.error('VPN interface and gateway address must be provided\n')
     exit(1)
 if not args.start and not args.stop:
-    avalon.error('No operation specified (start / stop)\n')
+    Avalon.error('No operation specified (start / stop)\n')
     exit(1)
 
 try:
@@ -162,5 +162,5 @@ try:
     elif args.stop:
         restore_route()
 except IndexError:
-    avalon.warning('No operation specified')
+    Avalon.warning('No operation specified')
     exit(0)
